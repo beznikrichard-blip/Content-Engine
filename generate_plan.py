@@ -10,7 +10,7 @@ SERVICE_ACCOUNT_FILE = 'credentials.json'
 YOUR_EMAIL = "ضع_إيميلك_هنا@gmail.com" # <--- إيميلك هنا
 
 # إعداد جيمناي بالطريقة المستقرة
-genai.configure(api_key=GEMINI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY, transport='rest')
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # إعداد جوجل دوكس ودرايف
