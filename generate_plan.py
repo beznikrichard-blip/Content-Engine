@@ -40,7 +40,7 @@ def generate_full_content_plan(niche):
             time.sleep(10) # زيادة وقت الانتظار قليلاً لضمان عدم تجاوز حدود الحساب المجاني
             
             sub_res = client.models.generate_content(
-                model="gemini-2.0-flash-lite",
+                model="gemini-1.5-flash",
                 contents=f"For the topic '{main}', give me 10 short amazing facts. Just the facts, no numbers."
             )
             full_plan[main] = [s.strip() for s in sub_res.text.split('\n') if s.strip()][:10]
