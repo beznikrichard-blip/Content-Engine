@@ -10,8 +10,7 @@ SERVICE_ACCOUNT_FILE = 'credentials.json'
 YOUR_EMAIL = "ضع_إيميلك_هنا@gmail.com" # <--- ضع إيميلك هنا
 
 # إعداد العميل الجديد (تلقائياً سيحاول الاتصال بالممرات المتاحة)
-client = genai.Client(api_key=GEMINI_API_KEY)
-
+client = genai.Client(api_key=GEMINI_API_KEY, http_options={'api_version': 'v1'})
 creds = service_account.Credentials.from_service_account_file(
     SERVICE_ACCOUNT_FILE, 
     scopes=['https://www.googleapis.com/auth/documents', 'https://www.googleapis.com/auth/drive']
