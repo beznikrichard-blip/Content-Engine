@@ -1,0 +1,21 @@
+name: Run My Content Bot
+on:
+  workflow_dispatch: # للتشغيل اليدوي
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Libs
+        run: pip install google-genai google-auth google-api-python-client
+      - name: Create Credentials
+        run: echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
+      - name: Execute Bot
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python generate_plan.py
