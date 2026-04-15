@@ -12,7 +12,7 @@ jobs:
         with:
           python-version: '3.11' # رفعنا النسخة لتجنب التحذيرات
       - name: Install Libs
-        run: pip install google-generativeai google-auth google-api-python-client
+        run: pip install -U google-genai google-auth google-api-python-client
       - name: Create Credentials
         run: echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
       - name: Execute Bot
