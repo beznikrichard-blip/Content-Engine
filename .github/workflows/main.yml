@@ -6,17 +6,16 @@ jobs:
   run-script:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # تحديث للإصدار 4
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v5 # تحديث للإصدار 5
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11' # رفعنا النسخة لتجنب التحذيرات
       - name: Install Libs
-        run: pip install google-genai google-auth google-api-python-client
+        run: pip install google-generativeai google-auth google-api-python-client
       - name: Create Credentials
         run: echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
       - name: Execute Bot
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         run: python generate_plan.py
