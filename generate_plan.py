@@ -4,7 +4,6 @@ import json
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# --- الإعدادات من Secrets ---
 MISTRAL_API_KEY = os.getenv("GEMINI_API_KEY") 
 SERVICE_ACCOUNT_FILE = 'credentials.json'
 YOUR_EMAIL = os.getenv("YOUR_EMAIL") 
@@ -12,17 +11,17 @@ YOUR_EMAIL = os.getenv("YOUR_EMAIL")
 def ask_ai(prompt):
     url = "https://api.mistral.ai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
-    data = {"model": "mistral-tiny", "messages": [{"role": "user", "content": prompt}]}
+    # أجبرنا الذكاء الاصطناعي على أن يكون مختصراً جداً لتجنب استهلاك المساحة
+    data = {"model": "mistral-tiny", "messages": [{"role": "user", "content": prompt + " . Give me ONLY the answer in 3 words maximum."}]}
     try:
         response = requests.post(url, json=data, headers=headers)
         return response.json()['choices'][0]['message']['content']
     except:
-        return "Space Mysteries: The Hidden Wonders"
+        return "Space Discovery Plan"
 
 def start_mission():
-    print("🚀 بدء المهمة ونظام التنظيف...")
+    print("🚀 بدء المهمة...")
     try:
-        # تحميل مفتاح JSON
         with open(SERVICE_ACCOUNT_FILE, 'r') as f:
             info = json.load(f)
         
@@ -32,49 +31,37 @@ def start_mission():
         drive_service = build('drive', 'v3', credentials=creds)
         docs_service = build('docs', 'v1', credentials=creds)
 
-        # --- خطوة حل مشكلة المساحة (STORAGE QUOTA) ---
-        print("🧹 جاري إخلاء مساحة في حساب الخدمة...")
-        try:
-            # البحث عن الملفات القديمة وحذفها نهائياً
-            results = drive_service.files().list(pageSize=10, fields="files(id, name)").execute()
-            items = results.get('files', [])
-            for item in items:
-                drive_service.files().delete(fileId=item['id']).execute()
-                print(f"🗑️ حذف ملف قديم: {item['name']}")
-        except Exception as e:
-            print(f"⚠️ تنبيه: لم يتم العثور على ملفات لحذفها أو {e}")
+        # 1. جلب محتوى مختصر جداً
+        raw_title = ask_ai("Give me a very short space mystery title")
+        title = "".join(x for x in raw_title if x.isalnum() or x in " -_")[:50] # تنظيف العنوان
+        facts = ask_ai(f"Write 3 short facts about {title}")
 
-        # --- توليد المحتوى ---
-        title = ask_ai("Give me a space title").strip().replace('"', '')
-        facts = ask_ai(f"Give me 5 short facts about {title}")
-
-        # --- إنشاء المستند ---
-        print(f"📂 جاري إنشاء المستند الجديد: {title}")
+        # 2. إنشاء المستند (مباشرة باسم بسيط)
+        print(f"📂 محاولة إنشاء الملف: {title}")
         file_metadata = {'name': title, 'mimeType': 'application/vnd.google-apps.document'}
+        
+        # محاولة الإنشاء
         doc_file = drive_service.files().create(body=file_metadata, fields='id').execute()
         doc_id = doc_file.get('id')
 
-        # كتابة النصوص داخل المستند
+        # 3. الكتابة
         docs_service.documents().batchUpdate(documentId=doc_id, body={
             'requests': [{'insertText': {'location': {'index': 1}, 'text': facts}}]
         }).execute()
 
-        # --- مشاركة الملف مع إيميلك (ليظهر في Drive الخاص بك) ---
+        # 4. نقل الملكية أو المشاركة فوراً لإخلاء مساحة الروبوت
         if YOUR_EMAIL:
-            print(f"🔗 مشاركة الوصول مع: {YOUR_EMAIL}")
             drive_service.permissions().create(
                 fileId=doc_id, 
                 body={'type': 'user', 'role': 'writer', 'emailAddress': YOUR_EMAIL}
             ).execute()
         
-        print(f"✅ مبروك! المهمة تمت بنجاح.")
-        print(f"🔗 رابط الملف: https://docs.google.com/document/d/{doc_id}")
+        print(f"✅ نجاح باهر! الرابط: https://docs.google.com/document/d/{doc_id}")
 
     except Exception as e:
+        print(f"❌ حدث خطأ: {e}")
         if "storageQuotaExceeded" in str(e):
-            print("❌ لا تزال المساحة ممتلئة. تأكد من إفراغ سلة المهملات في حسابك الشخصي المربوط.")
-        else:
-            print(f"❌ خطأ تقني: {e}")
+            print("💡 الحل: ادخل إلى Drive الخاص بك وامسح ملفات 'Trash' تماماً.")
 
 if __name__ == "__main__":
     start_mission()
