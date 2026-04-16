@@ -1,4 +1,4 @@
-{name: MyContentAuto Bot
+name: MyContentAuto Bot
 
 on:
   workflow_dispatch:
@@ -26,4 +26,4 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YOUR_EMAIL: ${{ secrets.YOUR_EMAIL }}
-        run: python generate_plan.py}
+        run: python generate_plan.py
