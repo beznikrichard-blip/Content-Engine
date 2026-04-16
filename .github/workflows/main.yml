@@ -1,33 +1,30 @@
-name: Generate Space Plan
+name: MyContentAuto Bot
 
 on:
-  workflow_dispatch: # يتيح لك تشغيل الكود يدوياً للتجربة
+  workflow_dispatch:
 
 jobs:
-  build:
+  run_bot:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12' # تحديث للنسخة المستقرة في 2026
 
-      - name: Install Dependencies
+      - name: Install Libraries
+        run: pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib requests
+
+      - name: Reconstruct Credentials
+        # نستخدم الطريقة الأكثر أماناً لضمان عدم تلف الـ JSON
         run: |
-          pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client requests
+          echo "${{ secrets.GCP_CREDENTIALS }}" > credentials.json
 
-      # هذه هي الخطوة السحرية التي تحل مشكلة (char 0)
-      - name: Create credentials.json
-        run: |
-          echo '${{ secrets.GCP_CREDENTIALS }}' > credentials.json
-        # ملاحظة: تأكد من إضافة سكرت في GitHub باسم GCP_CREDENTIALS يحتوي على نص JSON كاملاً
-
-      - name: Run Python Script
+      - name: Execute Script
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} # هنا نستخدم مفتاح Mistral
-          YOUR_EMAIL: ${{ secrets.YOUR_EMAIL }} # إيميلك الشخصي لاستلام الملف
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUR_EMAIL: ${{ secrets.YOUR_EMAIL }}
         run: python generate_plan.py
