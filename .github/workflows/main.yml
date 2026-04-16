@@ -1,4 +1,4 @@
-name: MyContentAuto Bot
+{name: MyContentAuto Bot
 
 on:
   workflow_dispatch:
@@ -13,13 +13,12 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12' # تحديث للنسخة المستقرة في 2026
+          python-version: '3.12'
 
       - name: Install Libraries
         run: pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib requests
 
       - name: Reconstruct Credentials
-        # نستخدم الطريقة الأكثر أماناً لضمان عدم تلف الـ JSON
         run: |
           echo '${{ secrets.GCP_CREDENTIALS }}' > credentials.json
 
@@ -27,4 +26,4 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YOUR_EMAIL: ${{ secrets.YOUR_EMAIL }}
-        run: python generate_plan.py
+        run: python generate_plan.py}
