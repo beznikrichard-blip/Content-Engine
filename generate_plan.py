@@ -2,36 +2,24 @@ import os
 import time
 from google import genai
 
-# الإعدادات
-API_KEY = os.getenv("GEMINI_API_KEY")
-client = genai.Client(api_key=API_KEY, http_options={'api_version': 'v1'})
+# نستخدم مكتبة قديمة قليلاً أو نعدل إعدادات الاتصال
+api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key) # حذفنا v1 لنجرب المسار التلقائي
 
-def generate_with_retry(prompt, retries=5):
-    for i in range(retries):
-        try:
-            # نستخدم الموديل المستقر 2.0
-            response = client.models.generate_content(
-                model="gemini-2.0-flash-001", 
-                contents=prompt
-            )
-            return response.text
-        except Exception as e:
-            if "429" in str(e):
-                wait_time = (i + 1) * 15  # سينتظر 15 ثم 30 ثم 45 ثانية...
-                print(f"⚠️ السيرفر مشغول (Quota 0).. سأنتظر {wait_time} ثانية ثم أحاول مجدداً ({i+1}/{retries})")
-                time.sleep(wait_time)
-            else:
-                raise e
-    raise Exception("فشلت جميع المحاولات بسبب قيود الحصة.")
-
-def run_mission():
-    print("🚀 بدء المهمة بنظام 'إعادة المحاولة الذكي'...")
+def last_chance_test():
+    print("🔄 محاولة استخدام 'البوابة المستقرة' وموديل 1.5...")
     try:
-        result = generate_with_retry("Say: 'Connection Established!'")
-        print(f"✅ رد السيرفر: {result}")
-        print("🎉 أخيراً! نجحنا في الالتفاف على جدار الحماية.")
+        # 1.5 Flash هو الأكثر مرونة مع GitHub Actions
+        response = client.models.generate_content(
+            model="gemini-1.5-flash", 
+            contents="Say 'Victory'"
+        )
+        print(f"✅ استجابة مذهلة: {response.text}")
     except Exception as e:
-        print(f"🛑 توقف نهائي: {e}")
+        if "429" in str(e):
+            print("❌ لا تزال جوجل ترفض GitHub. سأعطيك الحل الجذري الآن.")
+        else:
+            print(f"❌ خطأ مختلف: {e}")
 
 if __name__ == "__main__":
-    run_mission()
+    last_chance_test()
