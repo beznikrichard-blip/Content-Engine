@@ -1,3 +1,4 @@
+
 name: MyContentAuto Bot
 
 on:
@@ -21,7 +22,7 @@ jobs:
       - name: Reconstruct Credentials
         # نستخدم الطريقة الأكثر أماناً لضمان عدم تلف الـ JSON
         run: |
-          echo "${{ secrets.GCP_CREDENTIALS }}" > credentials.json
+          echo '${{ secrets.GCP_CREDENTIALS }}' > credentials.json
 
       - name: Execute Script
         env:
