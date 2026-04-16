@@ -6,20 +6,20 @@ from googleapiclient.discovery import build
 
 MISTRAL_API_KEY = os.getenv("GEMINI_API_KEY") 
 SERVICE_ACCOUNT_FILE = 'credentials.json'
-YOUR_EMAIL = os.getenv("YOUR_EMAIL") 
-FOLDER_ID = "1Umy7KDPJg8yj9nd3ZM_MFpH482B1Cz25"
+# ضع هنا ID الملف الذي أنشأته يدوياً
+EXISTING_DOC_ID = "10ucTp6EemffWCquHEpunVWpueKeLA8K0sCm7lUh9mqg"
 
 def ask_ai(prompt):
     url = "https://api.mistral.ai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
-    data = {"model": "mistral-tiny", "messages": [{"role": "user", "content": prompt + " . Max 5 words."}]}
+    data = {"model": "mistral-tiny", "messages": [{"role": "user", "content": prompt + " . Max 15 words."}]}
     try:
         response = requests.post(url, json=data, headers=headers)
         return response.json()['choices'][0]['message']['content']
-    except: return "Space Mystery"
+    except: return "New Space Discovery Found!"
 
 def start_mission():
-    print("🚀 محاولة نهائية باستخدام المجلد المشترك...")
+    print("🚀 محاولة تحديث الملف الموجود لتجاوز مشكلة المساحة...")
     try:
         with open(SERVICE_ACCOUNT_FILE, 'r') as f:
             info = json.load(f)
@@ -27,37 +27,30 @@ def start_mission():
         creds = service_account.Credentials.from_service_account_info(info, 
             scopes=['https://www.googleapis.com/auth/documents', 'https://www.googleapis.com/auth/drive'])
         
-        drive_service = build('drive', 'v3', credentials=creds)
         docs_service = build('docs', 'v1', credentials=creds)
 
-        title = ask_ai("Short space title")
-        
-        # التعديل هنا: إضافة 'supportsAllDrives': True لضمان قبول المجلد المشترك
-        file_metadata = {
-            'name': title,
-            'mimeType': 'application/vnd.google-apps.document',
-            'parents': [FOLDER_ID]
-        }
-        
-        doc_file = drive_service.files().create(
-            body=file_metadata, 
-            fields='id',
-            supportsAllDrives=True # إجبار جوجل على دعم المجلدات المشتركة
-        ).execute()
-        
-        doc_id = doc_file.get('id')
-        print(f"✅ تم إنشاء الملف بمعرف: {doc_id}")
+        # 1. جلب المحتوى من الذكاء الاصطناعي
+        content_to_write = ask_ai("Give me an amazing fact about black holes")
+        print(f"📝 المحتوى الجديد: {content_to_write}")
 
-        # كتابة المحتوى
-        docs_service.documents().batchUpdate(documentId=doc_id, body={
-            'requests': [{'insertText': {'location': {'index': 1}, 'text': "Success! Content generated."}}]
-        }).execute()
-
-        print(f"🏁 الرابط: https://docs.google.com/document/d/{doc_id}")
+        # 2. تحديث الملف (Overwrite) بدلاً من إنشاء واحد جديد
+        # هذه العملية لا تستهلك Quota التخزين لأن الملف موجود مسبقاً
+        requests_body = [
+            {
+                'insertText': {
+                    'location': {'index': 1},
+                    'text': f"\n--- Updated Content ---\n{content_to_write}\n"
+                }
+            }
+        ]
+        
+        docs_service.documents().batchUpdate(documentId=EXISTING_DOC_ID, body={'requests': requests_body}).execute()
+        
+        print("✅ تم تحديث الملف بنجاح دون الحاجة لمساحة إضافية!")
+        print(f"🔗 افتح الملف من هنا: https://docs.google.com/document/d/{EXISTING_DOC_ID}")
 
     except Exception as e:
-        print(f"❌ الخطأ المستمر: {e}")
-        print("🛠️ تأكد من مشاركة المجلد مع حساب الخدمة كـ Editor الآن.")
+        print(f"❌ خطأ: {e}")
 
 if __name__ == "__main__":
     start_mission()
