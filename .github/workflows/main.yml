@@ -1,7 +1,9 @@
 name: MyContentAuto Bot
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # للتشغيل اليدوي من داخل GitHub
+  repository_dispatch: # هذا هو المستقبل الذي سيسمح للزر بتشغيل البوت
+    types: [manual_trigger]
 
 jobs:
   run_bot:
